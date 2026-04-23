@@ -1,17 +1,17 @@
-/* Problem: Build a graph with adjacency list representation. Use linked lists or dynamic arrays.
+/* Problem: Perform DFS starting from a given source vertex using recursion.
 
 Input:
-- n (vertices)
-- m (edges)
-- edges (u, v)
+- n
+- adjacency list
+- starting vertex s
 
 Output:
-- List of adjacency lists for each vertex
+- DFS traversal order
 */
 #include <stdio.h>
 #include <stdlib.h>
 
-// Node for adjacency list
+// Node structure for adjacency list
 struct Node {
     int vertex;
     struct Node* next;
@@ -21,9 +21,10 @@ struct Node {
 struct Graph {
     int numVertices;
     struct Node** adjLists;
+    int* visited;
 };
 
-// Create a new node
+// Create a node
 struct Node* createNode(int v) {
     struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
     newNode->vertex = v;
@@ -37,49 +38,55 @@ struct Graph* createGraph(int vertices) {
     graph->numVertices = vertices;
 
     graph->adjLists = (struct Node**)malloc(vertices * sizeof(struct Node*));
+    graph->visited = (int*)malloc(vertices * sizeof(int));
 
-    for (int i = 0; i < vertices; i++)
+    for (int i = 0; i < vertices; i++) {
         graph->adjLists[i] = NULL;
+        graph->visited[i] = 0;
+    }
 
     return graph;
 }
 
-// Add edge (undirected graph)
+// Add edge (undirected)
 void addEdge(struct Graph* graph, int src, int dest) {
-    // Add edge src -> dest
     struct Node* newNode = createNode(dest);
     newNode->next = graph->adjLists[src];
     graph->adjLists[src] = newNode;
 
-    // Add edge dest -> src
     newNode = createNode(src);
     newNode->next = graph->adjLists[dest];
     graph->adjLists[dest] = newNode;
 }
 
-// Print graph
-void printGraph(struct Graph* graph) {
-    for (int i = 0; i < graph->numVertices; i++) {
-        struct Node* temp = graph->adjLists[i];
-        printf("Vertex %d: ", i);
-        while (temp) {
-            printf("%d -> ", temp->vertex);
-            temp = temp->next;
+// DFS recursive function
+void DFS(struct Graph* graph, int vertex) {
+    graph->visited[vertex] = 1;
+    printf("%d ", vertex);
+
+    struct Node* temp = graph->adjLists[vertex];
+
+    while (temp != NULL) {
+        int connectedVertex = temp->vertex;
+
+        if (!graph->visited[connectedVertex]) {
+            DFS(graph, connectedVertex);
         }
-        printf("NULL\n");
+        temp = temp->next;
     }
 }
 
 // Main function
 int main() {
-    int n, m;
+    int n, m, s;
+
     printf("Enter number of vertices: ");
     scanf("%d", &n);
 
+    struct Graph* graph = createGraph(n);
+
     printf("Enter number of edges: ");
     scanf("%d", &m);
-
-    struct Graph* graph = createGraph(n);
 
     printf("Enter edges (u v):\n");
     for (int i = 0; i < m; i++) {
@@ -88,8 +95,11 @@ int main() {
         addEdge(graph, u, v);
     }
 
-    printf("\nAdjacency List:\n");
-    printGraph(graph);
+    printf("Enter starting vertex for DFS: ");
+    scanf("%d", &s);
+
+    printf("\nDFS Traversal Order:\n");
+    DFS(graph, s);
 
     return 0;
 }
